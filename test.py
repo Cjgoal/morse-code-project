@@ -1,4 +1,5 @@
 import RPi.GPIO as GPIO
+import time
 
 MORSE_CODE_DICT = { 'A':'.-', 'B':'-...',
                     'C':'-.-.', 'D':'-..', 'E':'.',
@@ -15,62 +16,60 @@ MORSE_CODE_DICT = { 'A':'.-', 'B':'-...',
                     '0':'-----', ', ':'--..--', '.':'.-.-.-',
                     '?':'..--..', '/':'-..-.', '-':'-....-',
                     '(':'-.--.', ')':'-.--.-'}
-message = "'
+
 GPIO.setmode(GPIO.BCM)
-GPIO.setup(21,GPIO.IN, pull_up_down=GPIO.PUD_UP)
-GPIO.setup(26, GPIO.OUT)
+GPIO.setup(21, GPIO.IN, pull_up_down=GPIO.PUD_UP)  # Dot and dash input
+GPIO.setup(20, GPIO.IN, pull_up_down=GPIO.PUD_UP)  # Word separator input
+GPIO.setup(26, GPIO.OUT)  # Optional: for visual output
 
 def main():
-	try:
-		while True:
-			if GPIO.input(21) == GPIO.LOW:
-				GPIO.output(26, GPIO.LOW)
-	
-			else:
-				GPIO.output(26, GPIO.HIGH)
-	except KeyboardInterrupt:
-		pass
-	finally:
-		GPIO.cleanup()
+    message = ""
+    try:
+        while True:
+            if GPIO.input(21) == GPIO.LOW:  # Button for Morse code pressed
+                start_time = time.time()
+                while GPIO.input(21) == GPIO.LOW:
+                    time.sleep(0.01)  # debounce
+                press_duration = time.time() - start_time
+                
+                if press_duration < 0.5:  # Short press for dot
+                    message += '.'
+                    GPIO.output(26, GPIO.LOW)  # Optional: Turn on for dot
+                else:  # Long press for dash
+                    message += '-'
+                    GPIO.output(26, GPIO.HIGH)  # Optional: Turn on for dash
+                
+                time.sleep(0.5)  # Debounce delay
 
+            if GPIO.input(20) == GPIO.LOW:  # Word separator button pressed
+                if message:  # Only decrypt if there is a message
+                    decoded_word = decrypt(message)
+                    print(decoded_word)  # Print the decoded word
+                    message = ""  # Reset the message for the next input
+                
+                time.sleep(0.5)  # Debounce delay
 
- 
+    except KeyboardInterrupt:
+        pass
+    finally:
+        GPIO.cleanup()
 
 def decrypt(message):
- 
-    # extra space added at the end to access the
-    # last morse code
-    message += ' '
- 
+    message += ' '  # Add space to handle last Morse code
     decipher = ''
     citext = ''
+    
     for letter in message:
- 
-        # checks for space
-        if (letter != ' '):
- 
-            # counter to keep track of space
-            i = 0
- 
-            # storing morse code of a single character
+        if letter != ' ':
             citext += letter
- 
-        # in case of space
         else:
-            # if i = 1 that indicates a new character
-            i += 1
- 
-            # if i = 2 that indicates a new word
-            if i == 2 :
- 
-                 # adding space to separate words
-                decipher += ' '
-            else:
- 
-                # accessing the keys using their values (reverse of encryption)
-                decipher += list(MORSE_CODE_DICT.keys())[list(MORSE_CODE_DICT
-                .values()).index(citext)]
+            if citext:  # Process the collected Morse code
+                decipher += list(MORSE_CODE_DICT.keys())[list(MORSE_CODE_DICT.values()).index(citext)]
                 citext = ''
- 
+            else:
+                decipher += ' '  # Add space for word separation
+
     return decipher
- 
+
+if __name__ == '__main__':
+    main()
