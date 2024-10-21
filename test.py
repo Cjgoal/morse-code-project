@@ -24,12 +24,15 @@ GPIO.setup(26, GPIO.OUT)  # Optional: for visual output
 
 def main():
     message = ""
+    
     try:
         while True:
             if GPIO.input(21) == GPIO.LOW:  # Button for Morse code pressed
                 start_time = time.time()
+                
                 while GPIO.input(21) == GPIO.LOW:
                     time.sleep(0.01)  # debounce
+                
                 press_duration = time.time() - start_time
                 
                 if press_duration < 0.5:  # Short press for dot
@@ -39,15 +42,19 @@ def main():
                     message += '-'
                     GPIO.output(26, GPIO.HIGH)  # Optional: Turn on for dash
                 
-                time.sleep(0.5)  # Debounce delay
-
+                # Wait until button is released
+                while GPIO.input(21) == GPIO.HIGH:
+                    time.sleep(0.01)  # debounce
+            
             if GPIO.input(20) == GPIO.LOW:  # Word separator button pressed
                 if message:  # Only decrypt if there is a message
                     decoded_word = decrypt(message)
                     print(decoded_word)  # Print the decoded word
                     message = ""  # Reset the message for the next input
                 
-                time.sleep(0.5)  # Debounce delay
+                # Wait until button is released
+                while GPIO.input(20) == GPIO.HIGH:
+                    time.sleep(0.01)  # debounce
 
     except KeyboardInterrupt:
         pass
