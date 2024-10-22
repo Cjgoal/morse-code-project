@@ -42,7 +42,7 @@ def main():
                 
                 if press_duration < 0.3:  # Short press for dot
                     message += '.'
-                else if press_duration <0.6  # Long press for dash
+                else: # Long press for dash
                     message += '-'
                 
                 # Wait until button is released
