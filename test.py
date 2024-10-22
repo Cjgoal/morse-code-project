@@ -27,7 +27,8 @@ def main():
     
     try:
         while True:
-            if (time.time() - not_presssed) > 5.0
+            not_press_duration = time.time() - not_pressed
+            if not_press_duration > 5.0:
                 message += ' '
             if GPIO.input(21) == GPIO.LOW:  # Button for Morse code pressed
                 start_time = time.time()
