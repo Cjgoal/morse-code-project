@@ -24,7 +24,7 @@ GPIO.setup(26, GPIO.OUT)  # Optional: for visual output
 
 def main():
     message = ""
-    
+    not_pressed = 0
     try:
         while True:
             not_press_duration = time.time() - not_pressed
