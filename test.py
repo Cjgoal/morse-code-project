@@ -71,12 +71,17 @@ def decrypt(message):
             citext += letter
         else:
             if citext:  # Process the collected Morse code
-                decipher += list(MORSE_CODE_DICT.keys())[list(MORSE_CODE_DICT.values()).index(citext)]
+                # Check if the Morse code exists in the dictionary
+                if citext in MORSE_CODE_DICT.values():
+                    decipher += list(MORSE_CODE_DICT.keys())[list(MORSE_CODE_DICT.values()).index(citext)]
+                else:
+                    decipher += '?'  # Indicate unknown Morse code
                 citext = ''
             else:
                 decipher += ' '  # Add space for word separation
 
     return decipher
+
 
 if __name__ == '__main__':
     main()
