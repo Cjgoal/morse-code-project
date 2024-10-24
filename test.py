@@ -24,12 +24,9 @@ GPIO.setup(26, GPIO.OUT)  # Optional: for visual output
 
 def main():
     message = ""
-    not_pressed = 0
+    not_pressed = time.time()
     try:
         while True:
-            not_press_duration = time.time() - not_pressed
-            if not_press_duration > 5.0:
-                message += ' '
             if GPIO.input(21) == GPIO.LOW:  # Button for Morse code pressed
                 start_time = time.time()
                 
@@ -37,26 +34,30 @@ def main():
                     time.sleep(0.01)  # debounce
                 
                 press_duration = time.time() - start_time
-                not_pressed = time.time()
 
-                
-                if press_duration < 0.3:  # Short press for dot
+                if press_duration < 0.15:  # Short press for dot
                     message += '.'
+                    print(message)
+                    not_pressed = time.time()
                 else: # Long press for dash
                     message += '-'
+                    print(message)
+                    not_pressed = time.time()
+            not_pressedtime = time.time() - not_pressed
+            
+            if not_pressedtime > .75:
+                if message and message[-1] != ' ':
+                    message +
                 
-                # Wait until button is released
-                while GPIO.input(21) == GPIO.HIGH:
-                    time.sleep(0.01)  # debounce
+                
+                
             if GPIO.input(20) == GPIO.LOW:  # Word separator button pressed
-                if message:  # Only decrypt if there is a message
-                    decoded_word = decrypt(message)
-                    print(decoded_word)  # Print the decoded word
-                    message = ""  # Reset the message for the next input
-                
-                # Wait until button is released
-                while GPIO.input(20) == GPIO.HIGH:
-                    time.sleep(0.01)  # debounce
+                decoded_word = ""
+                decoded_word = decrypt(message)
+                print(decoded_word)
+                message = ""                  
+                while GPIO.input(20) == GPIO.LOW:
+                    time.sleep(0.1)  # debounce
 
     except KeyboardInterrupt:
         pass
