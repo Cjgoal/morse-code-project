@@ -47,7 +47,7 @@ def main():
             
             if not_pressedtime > .75:
                 if message and message[-1] != ' ':
-                    message +
+                    message += " "
                 
                 
                 
